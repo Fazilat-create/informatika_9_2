@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Табличные модели · 9 класс</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=PT+Serif:wght@700&family=Amiri&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%}
+body{font-family:"Nunito","Segoe UI",Arial,sans-serif;color:#1d2346;background:#2b2116;overflow:hidden}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+
+/* ============ ПРЕЗЕНТАЦИЯ ============ */
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#deck{position:relative;width:1280px;height:720px;transform-origin:center center;flex:none}
+.slide{position:absolute;inset:0;background:#fbf3e6;overflow:hidden;display:none;border-radius:6px}
+.slide.active{display:block}
+.slide::before{content:"";position:absolute;width:520px;height:420px;border-radius:50%;background:#f9e4c8;left:-260px;top:-230px}
+.slide::after{content:"";position:absolute;width:480px;height:360px;border-radius:50%;background:#f9e4c8;right:-240px;bottom:-230px}
+.inner{position:absolute;inset:0;padding:74px 64px 66px 64px;z-index:2}
+.stagetag{position:absolute;top:22px;left:64px;z-index:3;background:#f58a27;color:#fff;font-size:17px;padding:6px 16px 7px;border-radius:16px 16px 16px 4px}
+.stagetag b{font-weight:800}
+#deck h1{font-family:"PT Serif",Georgia,serif;font-weight:700;font-size:54px;line-height:1.06}
+#deck h2{font-family:"PT Serif",Georgia,serif;font-weight:700;font-size:38px;line-height:1.1;margin-bottom:14px}
+#deck h3{font-size:23px;font-weight:800;color:#e8741a;margin-bottom:8px}
+#deck p,#deck li{font-size:24px;line-height:1.36}
+#deck .lead{font-size:24px;margin-bottom:12px}
+.muted{color:#6b5a4a}
+.row{display:flex;gap:22px}
+.col{flex:1;min-width:0}
+#deck .card{background:#fffaf3;border:2px solid #f6c597;border-radius:24px;padding:18px 22px;position:relative}
+#deck .card.soft{background:#fce3c6;border-color:#fce3c6}
+#deck .card.blue{background:#e6f0fa;border-color:#bcd4ee}
+#deck .card.green{background:#eaf4e1;border-color:#c5dfb0}
+.rule{background:#fff3c4;border:3px solid #f2c94c;border-radius:22px;padding:12px 22px;font-size:23px;line-height:1.35}
+.rule b{color:#b8650f}
+.num{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f58a27;color:#fff;font-weight:800;font-size:20px;margin-right:12px;flex:none}
+.list{list-style:none}
+.list li{display:flex;align-items:center;margin:8px 0}
+.step{opacity:0;transform:translateY(10px);transition:opacity .35s,transform .35s}
+.step.shown{opacity:1;transform:none}
+.ghost{display:none}
+.ans{display:inline-flex;align-items:center;justify-content:center;min-width:52px;min-height:40px;border-radius:12px;padding:0 10px;cursor:pointer;vertical-align:middle}
+.ans:not(.shown){background:#fff;border:2px dashed #f5b27a}
+.ans:not(.shown)>*{visibility:hidden}
+.ans.shown{color:#2f7d32;background:#eaf6e3;border:2px solid #b9dca6;font-weight:700}
+.btn-o{border:none;border-radius:14px;padding:9px 18px;font-size:19px;font-weight:800;background:#f58a27;color:#fff;font-family:inherit;white-space:nowrap}
+.btn-o.ghostb{background:#fff;color:#8a6a4a;border:2px solid #f1d6b6}
+table.st{border-collapse:separate;border-spacing:0;border-radius:14px;overflow:hidden;font-size:19px;background:#fffaf3;border:2px solid #f6d3b2}
+table.st th{background:#f9c393;color:#4a2e14;padding:6px 12px;text-align:left;font-weight:800;font-size:17px}
+table.st td{padding:5px 12px;border-top:1.5px solid #f6d3b2}
+table.st td.c{text-align:center}
+table.st th.c{text-align:center}
+table.st .dgc{background:repeating-linear-gradient(45deg,#f3e3cf 0 6px,#fbf0e2 6px 12px)}
+#bar{position:absolute;left:0;right:0;bottom:0;height:46px;z-index:20;display:flex;align-items:center;gap:6px;padding:0 14px;background:rgba(255,250,243,.94);border-top:1px solid #f1d6b6}
+#bar .st{flex:1;height:28px;border-radius:14px;background:#f6e2c9;font-size:12.5px;display:flex;align-items:center;justify-content:center;color:#8a6a4a;cursor:pointer;white-space:nowrap;overflow:hidden;padding:0 6px}
+#bar .st.done{background:#f9c393;color:#5a3a1a}
+#bar .st.cur{background:#f58a27;color:#fff;font-weight:800}
+#bar .nb{min-width:36px;height:30px;border-radius:10px;border:none;background:#1d2346;color:#fff;font-size:16px;padding:0 8px}
+#bar .cnt{font-size:13px;color:#8a6a4a;width:46px;text-align:center}
+#notes{position:absolute;left:14px;right:14px;bottom:54px;z-index:21;background:#1d2346;color:#fff;border-radius:16px;padding:14px 20px;font-size:18px;line-height:1.4;display:none}
+#notes b{color:#f9b26f}
+#notes.on{display:block}
+
+.tile{background:#fffaf3;border:2px solid #f6c597;border-radius:22px;padding:14px 16px}
+.tile .e{font-size:34px;line-height:1}
+.tile b{display:block;font-size:21px;margin-top:4px}
+.tile span{display:block;font-size:17px;color:#6b5a4a;margin-top:4px;line-height:1.3}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.tcard{background:#fff;border:2.5px solid #f1d6b6;border-radius:18px;padding:12px 14px;min-height:150px;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center}
+.tcard .e{font-size:36px;line-height:1}
+.tcard .c{font-size:19px;font-weight:700;line-height:1.25}
+.tcard .t{font-size:16px;font-weight:800;border-radius:999px;padding:3px 12px;opacity:0;transition:opacity .3s}
+.tcard.shown.os{border-color:#7cc36a;background:#f4fbef}
+.tcard.shown.oo{border-color:#8fb4dd;background:#eef5fc}
+.tcard.shown .t{opacity:1}
+.tcard.os .t{background:#2f7d32;color:#fff}
+.tcard.oo .t{background:#2f5f9e;color:#fff}
+.query{display:flex;align-items:center;gap:18px;background:#fff;border:3px solid #f6c597;border-radius:24px;padding:12px 22px;margin-bottom:12px}
+.query .e{font-size:38px}
+.query .ans{margin-left:auto;white-space:nowrap;font-size:21px}
+
+/* ============ ГРАФЫ ============ */
+svg.gr{display:block;width:100%;height:auto;overflow:visible}
+.gr .ed{stroke:#bfa98f;stroke-width:4;fill:none;transition:stroke .25s,stroke-width .25s,opacity .45s}
+.gr .ed.on{stroke:#f58a27;stroke-width:7}
+.gr .ed.best{stroke:#3f8a3a;stroke-width:8}
+.gr .hit{stroke:transparent;stroke-width:26;fill:none;cursor:pointer}
+.gr .hid{opacity:0;pointer-events:none}
+.gr .w{font-family:"Nunito",sans-serif;font-weight:800;font-size:26px;fill:#1d2346;paint-order:stroke;stroke:#fffaf3;stroke-width:8px;stroke-linejoin:round;text-anchor:middle;dominant-baseline:central;pointer-events:none;transition:opacity .45s,fill .25s}
+.gr .w.on{fill:#d9600f}
+.gr .w.best{fill:#2f7d32}
+.gr .nd{cursor:pointer}
+.gr .nd circle{fill:#fff;stroke:#f58a27;stroke-width:3.5;transition:fill .25s,stroke .25s}
+.gr .nd text{font-family:"Nunito",sans-serif;font-weight:800;font-size:27px;fill:#1d2346;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.gr .nd.on circle{fill:#fff1a8}
+.gr .nd.closed circle{fill:#dff0d6;stroke:#3f8a3a}
+.gr .lb{font-family:"Nunito",sans-serif;font-weight:800;font-size:26px;fill:#2f5f9e;text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:#fffaf3;stroke-width:8px;stroke-linejoin:round;pointer-events:none}
+.gcard{background:#fffaf3;border:2px solid #f6c597;border-radius:24px;padding:12px 16px}
+
+/* матрица (таблица графа) */
+table.mt{border-collapse:separate;border-spacing:0;background:#fffaf3;border:2px solid #f6d3b2;border-radius:14px;overflow:hidden}
+.mt th{background:#f9c393;color:#4a2e14;font-weight:800;font-size:22px;width:58px;height:50px;text-align:center}
+.mt th.cn{background:#fce3c6}
+.mt td{width:58px;height:50px;text-align:center;font-size:23px;font-weight:700;border-top:1.5px solid #f6d3b2;border-left:1.5px solid #f6d3b2;cursor:pointer;padding:3px;transition:background .2s}
+.mt td.dg{background:repeating-linear-gradient(45deg,#f3e3cf 0 6px,#fbf0e2 6px 12px);cursor:default}
+.mt td.no{cursor:default}
+.mt td.on{background:#fff1a8;color:#b8500a}
+.mt.sm th,.mt.sm td{width:47px;height:40px;font-size:19px}
+.mt .ans{min-width:0;width:100%;height:100%;min-height:0;border-radius:9px;padding:0}
+
+.oge{background:#fff;border:2px solid #d9dee4;border-radius:16px;padding:16px 20px;box-shadow:0 4px 0 rgba(29,35,70,.06)}
+.oge .lbl{display:inline-block;background:#1d2346;color:#fff;font-weight:800;font-size:16px;border-radius:8px;padding:2px 10px;margin-bottom:8px}
+#deck .oge p{font-size:20px;line-height:1.4}
+.log{background:#fff;border:2px solid #f1d6b6;border-radius:16px;padding:10px 14px;font-size:19px;line-height:1.35}
+.log div{padding:1px 0}
+.log div.new{color:#c4560c;font-weight:800}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{background:#fff;border:2px solid #f1d6b6;border-radius:14px;padding:7px 12px;font-size:19px;font-weight:700;cursor:pointer;text-align:left;font-family:inherit;display:flex;justify-content:space-between;gap:8px}
+.chip i{font-style:normal;color:#8a6a4a;font-weight:600}
+.chip b{white-space:nowrap}
+.chip.cur{border-color:#f58a27;background:#fff3e6}
+.chip.best{border-color:#3f8a3a;background:#eaf6e3}
+.marks{display:flex;gap:6px}
+.marks div{flex:1;background:#fff;border:2px solid #f1d6b6;border-radius:12px;text-align:center;padding:3px 0}
+.marks b{display:block;font-size:18px;color:#6b5a4a}
+.marks span{font-size:24px;font-weight:800;color:#2f5f9e}
+.marks .closed{background:#eaf6e3;border-color:#7cc36a}
+.marks .closed span{color:#2f7d32}
+
+/* вопросы со вкладками */
+.qz .qt{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.qz .qt button{border:2px solid #f1d6b6;background:#fff;border-radius:12px;padding:4px 14px;font-weight:800;color:#8a6a4a;font-size:18px}
+.qz .qt button.on{background:#1d2346;border-color:#1d2346;color:#fff}
+.qz .qt button.ok{border-color:#7cc36a;background:#eaf6e3;color:#2f7d32}
+.qz .qt button.ok.on{background:#2f7d32;color:#fff}
+.qz .lvl{display:inline-block;font-size:15px;font-weight:800;border-radius:999px;padding:2px 10px;background:#e6f0fa;color:#2f5f9e;margin-bottom:6px}
+.qz .qq{font-weight:700;line-height:1.35;font-size:19px}
+.qz .ar2{display:flex;gap:8px;margin-top:10px}
+.qz input{flex:1;min-width:0;border:2px solid #f1d6b6;border-radius:12px;padding:6px 12px;background:#fff;font-weight:800;font-size:20px}
+.qz input:focus{outline:none;border-color:#f58a27}
+.qz .go{border:none;border-radius:12px;padding:6px 16px;font-weight:800;background:#f58a27;color:#fff;font-size:19px}
+.qz .fb{margin-top:6px;font-weight:800;min-height:1.3em;font-size:19px}
+.qz .fb.ok{color:#2f7d32}.qz .fb.no{color:#b23c2c}
+.qz .more button{border:none;background:none;color:#2f5f9e;font-weight:800;text-decoration:underline;padding:2px 0;margin-right:14px;font-size:18px}
+.qz .hint{margin-top:8px;background:#fff3c4;border-radius:12px;padding:8px 12px;display:none;line-height:1.35;font-size:18px}
+.qz .hint.on{display:block}
+.qz .gwrap{position:relative}
+.qz .gcover{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#fffaf3;border-radius:16px;text-align:center;font-size:19px;color:#6b5a4a;padding:20px}
+.qz .gcover.off{display:none}
+.linkbox{display:inline-flex;align-items:center;gap:12px;background:#1d2346;color:#fff;border-radius:18px;padding:14px 26px;font-size:24px;font-weight:800;text-decoration:none}
+</style>
+</head>
+<body>
+
+<div id="viewport"><div id="deck">
+
+<!-- 1 -->
+<section class="slide" data-stage="1" data-note="Приветствие, дуа перед уроком. Проверяем готовность к уроку: тетрадь, ручка, линейка (будем рисовать графы).">
+<div class="stagetag"><b>Этап 1</b> · Оргмомент · 1 мин</div>
+<div class="inner">
+  <div style="margin-top:56px;width:600px">
+    <p class="muted" style="font-size:24px">Информатика · 9 класс</p>
+    <h1 style="margin-top:8px">Табличные<br>модели</h1>
+    <p class="muted" style="margin-top:22px;font-size:22px">📋 Как записать граф в таблицу и найти по ней кратчайший путь — задание 4 ОГЭ</p>
+  </div>
+</div>
+<div style="position:absolute;right:70px;top:120px;width:500px;background:#ffd23f;border-radius:60px;padding:30px 34px;text-align:center;box-shadow:0 0 0 14px #ffe07a;z-index:2">
+  <p style="font-size:26px">Ассаляму аляйкум, ребята!</p>
+  <p style="font-size:40px;margin:6px 0;font-family:'Amiri','Noto Naskh Arabic','DejaVu Sans',serif" dir="rtl">رَبِّ زِدْنِي عِلْمًا</p>
+  <p style="font-size:26px">«Рабби зидни ‘ильман»</p>
+  <p style="font-size:22px;margin-top:6px">Смысл: «Господи! Приумножь мои знания!»<br><span style="font-size:19px">(смысл 114 аята суры «Та-Ха»)</span></p>
+</div>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-stage="2" data-note="Фронтальный опрос по графам. Сначала спрашиваем — потом открываем ответ кликом (или стрелкой →). Картинки справа — опора для вопросов 2 и 3.">
+<div class="stagetag"><b>Этап 2</b> · Актуализация · 6 мин</div>
+<div class="inner">
+  <h2>Вспомним графы</h2>
+  <div class="row">
+    <div class="col" style="display:grid;gap:10px;align-content:start">
+      <div class="card" style="padding:11px 20px"><p style="font-size:22px">1. Граф — это… <span class="ans"><span>вершины и рёбра — связи между ними</span></span></p></div>
+      <div class="card" style="padding:11px 20px"><p style="font-size:22px">2. Чем граф ② отличается от ①? <span class="ans"><span>у рёбер есть числа — это взвешенный граф</span></span></p></div>
+      <div class="card" style="padding:11px 20px"><p style="font-size:22px">3. А граф ③? <span class="ans"><span>рёбра со стрелками — ориентированный граф</span></span></p></div>
+      <div class="card" style="padding:11px 20px"><p style="font-size:22px">4. Путь в графе — это… <span class="ans"><span>цепочка вершин, соединённых рёбрами</span></span></p></div>
+      <div class="card" style="padding:11px 20px"><p style="font-size:22px">5. Что ищем в задании 9 ОГЭ? <span class="ans"><span>сколько разных путей из одного пункта в другой</span></span></p></div>
+    </div>
+    <div style="width:370px;flex:none;display:grid;gap:10px">
+      <div class="gcard" style="display:flex;align-items:center;gap:8px;padding:6px 14px"><b style="font-size:30px;color:#e8741a">①</b><svg id="mini1" style="height:136px;width:auto"></svg></div>
+      <div class="gcard" style="display:flex;align-items:center;gap:8px;padding:6px 14px"><b style="font-size:30px;color:#e8741a">②</b><svg id="mini2" style="height:136px;width:auto"></svg></div>
+      <div class="gcard" style="display:flex;align-items:center;gap:8px;padding:6px 14px"><b style="font-size:30px;color:#e8741a">③</b><svg id="mini3" style="height:136px;width:auto"></svg></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 3 -->
+<section class="slide" id="s9" data-stage="2" data-note="Разминка по заданию 9 с прошлого урока. Нажимаем → или кликаем по пункту — появляется число путей и объяснение справа. Пусть класс называет число раньше, чем откроем. Ответ: 12.">
+<div class="stagetag"><b>Этап 2</b> · Актуализация · 6 мин</div>
+<div class="inner" style="padding-top:68px">
+  <h2 style="margin-bottom:6px">Разминка: задание 9 ОГЭ</h2>
+  <p style="font-size:21px;margin-bottom:10px">Сколько существует различных путей из пункта <b>А</b> в пункт <b>К</b>? Двигаться можно только по стрелкам.</p>
+  <div class="row" style="align-items:flex-start;gap:18px">
+    <div class="gcard" style="width:700px;flex:none"><svg id="g9"></svg></div>
+    <div class="col" style="display:grid;gap:10px">
+      <div class="rule" style="font-size:20px">Число путей в пункт = <b>сумма</b> чисел у пунктов, <b>из которых</b> в него ведут стрелки</div>
+      <div class="log" id="log9" style="min-height:220px"></div>
+      <div class="rule step" style="text-align:center;font-size:26px;background:#eaf6e3;border-color:#7cc36a">Ответ: <b style="color:#2f7d32">12</b> путей</div>
+    </div>
+  </div>
+  <div id="ghost9"></div>
+</div>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-stage="3" data-note="Мотивация. Навигатор, карта метро, логистика — компьютер не «видит» картинку, ему нужен другой способ записи. Спрашиваем: как записать этот граф без рисунка? Потом открываем таблицу. Клик по клетке подсвечивает дорогу на графе.">
+<div class="stagetag"><b>Этап 3</b> · Мотивация · 2 мин</div>
+<div class="inner">
+  <h2>Как навигатор хранит карту?</h2>
+  <p class="lead muted" style="font-size:22px;margin-top:-4px">Компьютер не видит рисунок с кружками и линиями. Как записать этот граф <b>без рисунка</b>?</p>
+  <div class="row" style="align-items:center">
+    <div class="gcard" style="width:560px;flex:none"><svg id="gM"></svg></div>
+    <div class="col step" style="display:flex;flex-direction:column;align-items:center;gap:10px">
+      <div id="tM"></div>
+      <p class="muted" style="font-size:19px;text-align:center">Нажмите на клетку — дорога подсветится</p>
+    </div>
+  </div>
+  <div class="rule step" style="margin-top:12px;text-align:center">Таблица — ещё один способ записать тот же граф. Это <b>табличная модель</b>.</div>
+</div>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-stage="4" data-note="Тема на доску. План вывешиваем — в конце урока проверяем по нему.">
+<div class="stagetag"><b>Этап 4</b> · Тема и цель · 1 мин</div>
+<div class="inner">
+  <p class="muted" style="font-size:22px">Тема урока</p>
+  <h1 style="font-size:50px;margin:6px 0 24px">Табличные модели</h1>
+  <div class="row">
+    <div class="col card">
+      <h3>План урока</h3>
+      <ul class="list">
+        <li><span class="num">1</span>Что такое табличная модель</li>
+        <li><span class="num">2</span>Таблицы «объект–свойство» и «объект–объект»</li>
+        <li><span class="num">3</span>Граф → таблица и таблица → граф</li>
+        <li><span class="num">4</span>Задание 4 ОГЭ: кратчайший путь</li>
+      </ul>
+    </div>
+    <div class="card soft" style="width:420px;flex:none">
+      <h3>К концу урока вы сможете</h3>
+      <p style="font-size:22px">по таблице расстояний между пунктами найти <b>длину кратчайшего пути</b> — это задание 4 ОГЭ.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-stage="5" data-note="Пункт плана 1. Записать определение. Примеры: пусть дети сами назовут, где встречают таблицы, потом открываем карточки.">
+<div class="stagetag"><b>Этап 5</b> · Новое знание · 10 мин</div>
+<div class="inner">
+  <h2>Что такое табличная модель</h2>
+  <div class="rule"><b>Табличная информационная модель</b> — описание объектов, их свойств или связей между ними в виде <b>таблицы</b>: строк и столбцов.</div>
+  <p class="muted" style="font-size:21px;margin:14px 0 10px">Где мы встречаем таблицы каждый день?</p>
+  <div class="g3">
+    <div class="tile step"><div class="e">🗓️</div><b>Расписание уроков</b><span>день и номер урока → предмет</span></div>
+    <div class="tile step"><div class="e">✖️</div><b>Таблица умножения</b><span>строка × столбец → результат</span></div>
+    <div class="tile step"><div class="e">⚗️</div><b>Таблица Менделеева</b><span>элементы и их свойства</span></div>
+    <div class="tile step"><div class="e">🌤️</div><b>Прогноз погоды</b><span>день → температура, ветер, осадки</span></div>
+    <div class="tile step"><div class="e">📒</div><b>Электронный журнал</b><span>ученик и дата → оценка</span></div>
+    <div class="tile step"><div class="e">🛣️</div><b>Таблица расстояний</b><span>город и город → километры</span></div>
+  </div>
+  <p class="step" style="font-size:21px;margin-top:12px">💡 Зачем таблица? Данные <b>компактны</b>, их легко <b>найти</b> и <b>сравнить</b>.</p>
+</div>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-stage="5" data-note="Пункт плана 2. Два вида таблиц. ОС — каждая строка = один объект, столбцы = его свойства. ОО — и строки, и столбцы — одни и те же объекты, в клетке — связь между ними. Таблицу из 0 и 1 называют двоичной матрицей.">
+<div class="stagetag"><b>Этап 5</b> · Новое знание · 10 мин</div>
+<div class="inner">
+  <h2>Два вида таблиц</h2>
+  <div class="row">
+    <div class="col card green">
+      <h3 style="color:#2f7d32">«Объект – свойство»</h3>
+      <p style="font-size:20px;margin-bottom:10px">В строках — <b>объекты</b>, в столбцах — их <b>свойства</b>.</p>
+      <table class="st" style="font-size:20px">
+        <tr><th>Планета</th><th>Диаметр, км</th><th>Спутников</th></tr>
+        <tr><td>Меркурий</td><td class="c">4 879</td><td class="c">0</td></tr>
+        <tr><td>Венера</td><td class="c">12 104</td><td class="c">0</td></tr>
+        <tr><td>Земля</td><td class="c">12 742</td><td class="c">1</td></tr>
+        <tr><td>Марс</td><td class="c">6 779</td><td class="c">2</td></tr>
+      </table>
+    </div>
+    <div class="col card blue step">
+      <h3 style="color:#2f5f9e">«Объект – объект»</h3>
+      <p style="font-size:20px;margin-bottom:10px">И в строках, и в столбцах — <b>объекты</b>. В клетке — <b>связь</b> между ними.</p>
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <table class="st" style="font-size:20px">
+          <tr><th></th><th class="c">Аня</th><th class="c">Боря</th><th class="c">Вика</th></tr>
+          <tr><th>Аня</th><td class="dgc"></td><td class="c">1</td><td class="c">0</td></tr>
+          <tr><th>Боря</th><td class="c">1</td><td class="dgc"></td><td class="c">1</td></tr>
+          <tr><th>Вика</th><td class="c">0</td><td class="c">1</td><td class="dgc"></td></tr>
+        </table>
+        <p style="font-size:18px;line-height:1.3">Кто с кем переписывается:<br><b>1</b> — да, <b>0</b> — нет.<br><br>Таблицу из 0 и 1 называют <b>двоичной матрицей</b>.</p>
+      </div>
+    </div>
+  </div>
+  <div class="rule step" style="margin-top:14px">Таблица расстояний между городами — тоже <b>«объект – объект»</b>. В клетке — длина дороги.</div>
+</div>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-stage="5" data-note="Класс голосует: ОС или ОО? Потом клик по карточке (или →). Подсказка: если в строках и столбцах одни и те же объекты — ОО.">
+<div class="stagetag"><b>Этап 5</b> · Новое знание · 10 мин</div>
+<div class="inner">
+  <h2>Какой это вид таблицы?</h2>
+  <p class="muted" style="font-size:21px;margin:-6px 0 14px">Подсказка: если в строках и в столбцах <b>одни и те же объекты</b> — это «объект – объект».</p>
+  <div class="g3">
+    <button class="tcard os" type="button"><span class="e">🪐</span><span class="c">Планеты: диаметр, масса, число спутников</span><span class="t">объект – свойство</span></button>
+    <button class="tcard oo" type="button"><span class="e">🛣️</span><span class="c">Расстояния между городами</span><span class="t">объект – объект</span></button>
+    <button class="tcard oo" type="button"><span class="e">⚽</span><span class="c">Турнирная таблица: с каким счётом команды сыграли друг с другом</span><span class="t">объект – объект</span></button>
+    <button class="tcard os" type="button"><span class="e">🛒</span><span class="c">Товары в магазине: цена, вес, срок годности</span><span class="t">объект – свойство</span></button>
+    <button class="tcard oo" type="button"><span class="e">🤝</span><span class="c">Кто с кем дружит в классе: 1 — да, 0 — нет</span><span class="t">объект – объект</span></button>
+    <button class="tcard os" type="button"><span class="e">🧑‍🎓</span><span class="c">Ученики класса: рост, возраст, любимый предмет</span><span class="t">объект – свойство</span></button>
+  </div>
+</div>
+</section>
+
+<!-- 9 -->
+<section class="slide" id="sB" data-stage="5" data-note="Пункт плана 3. Строим граф по таблице: каждое нажатие → читает одно число и рисует дорогу. Обращаем внимание: число A–B стоит и в клетке B–A — таблица симметрична. Когда граф построен, клик по клетке или дороге подсвечивает пару.">
+<div class="stagetag"><b>Этап 5</b> · Новое знание · 10 мин</div>
+<div class="inner" style="padding-top:68px">
+  <h2 style="margin-bottom:6px">Из таблицы — граф</h2>
+  <p class="muted" style="font-size:20px;margin-bottom:10px">Читаем таблицу по строкам. Каждое число — дорога между двумя пунктами.</p>
+  <div class="row" style="align-items:flex-start;gap:18px">
+    <div style="width:420px;flex:none;display:grid;gap:10px">
+      <div id="tB"></div>
+      <div class="log" id="logB" style="min-height:86px"></div>
+    </div>
+    <div class="gcard col"><svg id="gB" style="height:372px"></svg></div>
+  </div>
+  <div id="ghostB"></div>
+  <div class="rule step" style="margin-top:10px;font-size:21px;padding:9px 20px">Таблица <b>симметрична</b> (A–B = B–A), диагональ пустая. <b>Пустая клетка — дороги нет.</b></div>
+</div>
+</section>
+
+<!-- 10 -->
+<section class="slide" data-stage="5" data-note="Наоборот: класс заполняет таблицу в тетрадях по графу, затем открываем клетки по одной (→) или кликом. Ловушка: между A и D дороги нет — клетка пустая (прочерк).">
+<div class="stagetag"><b>Этап 5</b> · Новое знание · 10 мин</div>
+<div class="inner">
+  <h2>Из графа — таблица</h2>
+  <p class="muted" style="font-size:21px;margin:-6px 0 14px">Заполните таблицу в тетради, потом проверим. Числа — расстояния в км.</p>
+  <div class="row" style="align-items:flex-start">
+    <div class="gcard" style="width:540px;flex:none"><svg id="gR"></svg></div>
+    <div class="col" style="display:flex;flex-direction:column;align-items:center;gap:16px">
+      <div id="tR"></div>
+      <div class="rule step" style="font-size:21px">Проверьте себя: таблица <b>симметрична</b>? Между A и D дороги нет — клетка <b>пустая</b>.</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 11 -->
+<section class="slide" data-stage="6" data-note="Физминутка. Все встают. Читаем утверждение: верно — тянемся руками вверх, неверно — приседаем. Потом открываем ответ.">
+<div class="stagetag"><b>Этап 6</b> · Физминутка · 2 мин</div>
+<div class="inner">
+  <h2>Верно — руки вверх 🙌, неверно — присели 🧎</h2>
+  <p class="lead muted" style="margin-top:-4px;font-size:21px">Все встали! Слушаем утверждение и показываем ответ.</p>
+  <div class="query step"><span class="e">✖️</span><p style="font-size:22px">Таблица умножения — это табличная модель</p><span class="ans"><span>верно 🙌</span></span></div>
+  <div class="query step"><span class="e">🕸️</span><p style="font-size:22px">У графа есть строки и столбцы</p><span class="ans"><span>неверно 🧎 — это у таблицы</span></span></div>
+  <div class="query step"><span class="e">🔁</span><p style="font-size:22px">В таблице дорог клетки A–B и B–A содержат одно и то же число</p><span class="ans"><span>верно 🙌</span></span></div>
+  <div class="query step"><span class="e">🚫</span><p style="font-size:22px">Пустая клетка значит, что дорога бесплатная</p><span class="ans"><span>неверно 🧎 — дороги нет</span></span></div>
+</div>
+</section>
+
+<!-- 12 -->
+<section class="slide" data-stage="7" data-note="Пункт плана 4. Читаем условие так, как оно выглядит в ОГЭ. Задание 4 — базовое, 1 балл. Алгоритм и ловушки открываем по одному. Сразу спрашиваем: какой путь кажется самым коротким? Многие скажут A–E = 12 — сейчас проверим.">
+<div class="stagetag"><b>Этап 7</b> · Задание 4 ОГЭ · 13 мин</div>
+<div class="inner">
+  <h2>Задание 4 ОГЭ</h2>
+  <div class="row" style="align-items:flex-start">
+    <div class="oge" style="width:560px;flex:none">
+      <span class="lbl">Задание 4 · 1 балл</span>
+      <p>Между населёнными пунктами A, B, C, D, E построены дороги, протяжённость которых (в километрах) приведена в таблице.</p>
+      <div id="tO" style="margin:10px 0"></div>
+      <p>Определите длину кратчайшего пути между пунктами <b>A</b> и <b>E</b>. Передвигаться можно только по дорогам, протяжённость которых указана в таблице.</p>
+    </div>
+    <div class="col" style="display:grid;gap:10px">
+      <div class="card" style="padding:14px 18px">
+        <h3>Как решать</h3>
+        <ul class="list">
+          <li class="step" style="font-size:21px"><span class="num">1</span>Нарисуйте граф по таблице</li>
+          <li class="step" style="font-size:21px"><span class="num">2</span>Найдите пути из A в E: перебором или метками</li>
+          <li class="step" style="font-size:21px"><span class="num">3</span>Выберите самый короткий</li>
+        </ul>
+      </div>
+      <div class="card soft step" style="padding:14px 18px">
+        <h3>⚠️ Ловушки</h3>
+        <p style="font-size:19px">• Прямая дорога <b>не всегда</b> самая короткая</p>
+        <p style="font-size:19px">• «Путь <b>через</b> пункт C» — берём только пути, где есть C</p>
+        <p style="font-size:19px">• Каждый пункт посещаем <b>не больше одного раза</b></p>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 13 -->
+<section class="slide" id="sP" data-stage="7" data-note="Способ 1 — перебор. Перебираем пути по порядку, «как в словаре»: сначала все, что начинаются с A–B, потом с A–C, потом A–E. Каждое → открывает путь и подсвечивает его. Клик по пути — подсветить снова. Вывод: прямая дорога 12 км, а объезд — 10 км.">
+<div class="stagetag"><b>Этап 7</b> · Задание 4 ОГЭ · 13 мин</div>
+<div class="inner" style="padding-top:68px">
+  <h2 style="margin-bottom:6px">Способ 1: перебираем все пути</h2>
+  <p class="muted" style="font-size:20px;margin-bottom:10px">По порядку, как в словаре: сначала пути через B, потом через C, потом прямой. Так ничего не пропустим.</p>
+  <div class="row" style="align-items:flex-start;gap:18px">
+    <div class="gcard" style="width:560px;flex:none"><svg id="gP"></svg></div>
+    <div class="col" style="display:grid;gap:10px">
+      <div class="chips" id="chipsP"></div>
+      <div class="rule step" id="bestP" style="font-size:21px"></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 14 -->
+<section class="slide" id="sD" data-stage="7" data-note="Способ 2 — метки (когда пунктов 6 и больше, перебор долгий). Каждое → один шаг. Проговариваем: метка — лучшее расстояние от A, которое мы уже знаем. Закрытый пункт (зелёный) больше не меняется. Ответ 13 — и путь идёт через 5 дорог!">
+<div class="stagetag"><b>Этап 7</b> · Задание 4 ОГЭ · 13 мин</div>
+<div class="inner" style="padding-top:68px">
+  <h2 style="margin-bottom:8px">Способ 2: метки — кратчайший путь из A в F</h2>
+  <div class="row" style="align-items:flex-start;gap:18px">
+    <div style="width:600px;flex:none;display:grid;gap:10px">
+      <div class="gcard"><svg id="gD"></svg></div>
+      <div class="marks" id="marksD"></div>
+    </div>
+    <div class="col" style="display:grid;gap:10px">
+      <div class="rule" style="font-size:18.5px;line-height:1.32">
+        <b>Метка</b> — самое короткое расстояние от A, которое мы уже нашли.<br>
+        1) Берём пункт с <b>наименьшей</b> меткой и <b>закрываем</b> его.<br>
+        2) Проверяем его соседей: если через него <b>короче</b> — исправляем метку.<br>
+        3) Повторяем, пока не закроем конечный пункт.
+      </div>
+      <div class="log" id="logD" style="min-height:190px;font-size:19px"></div>
+    </div>
+  </div>
+  <div id="ghostD"></div>
+</div>
+</section>
+
+<!-- 15 -->
+<section class="slide" data-stage="7" data-note="Решаем у доски / в тетрадях. Сначала рисуем граф сами, кнопка «Показать граф» — для проверки. Задание 2 — «через пункт»: самый короткий путь вообще (13) через E не проходит. Задание 3 — ловушка прямой дороги. ⭐ — если успеваем.">
+<div class="stagetag"><b>Этап 7</b> · Задание 4 ОГЭ · 13 мин</div>
+<div class="inner" style="padding-top:66px">
+  <h2 style="font-size:32px;margin-bottom:8px">Решаем сами</h2>
+  <div class="qz" id="qz4"></div>
+</div>
+</section>
+
+<!-- 16 -->
+<section class="slide" data-stage="8" data-note="Быстрая самопроверка: класс показывает «верно / неверно» (большой палец вверх / вниз), затем открываем ответ кликом.">
+<div class="stagetag"><b>Этап 8</b> · Самопроверка · 2 мин</div>
+<div class="inner">
+  <h2>Верно или неверно?</h2>
+  <div style="display:grid;gap:10px">
+    <div class="card" style="padding:11px 20px"><p style="font-size:22px">1. В таблице «объект – свойство» каждая строка описывает один объект. <span class="ans"><span>Верно</span></span></p></div>
+    <div class="card" style="padding:11px 20px"><p style="font-size:22px">2. Таблица расстояний между городами — это «объект – свойство». <span class="ans"><span>Неверно: «объект – объект»</span></span></p></div>
+    <div class="card" style="padding:11px 20px"><p style="font-size:22px">3. Если дороги двусторонние, таблица симметрична относительно диагонали. <span class="ans"><span>Верно</span></span></p></div>
+    <div class="card" style="padding:11px 20px"><p style="font-size:22px">4. Кратчайший путь — всегда прямая дорога из таблицы. <span class="ans"><span>Неверно: объезд бывает короче</span></span></p></div>
+    <div class="card" style="padding:11px 20px"><p style="font-size:22px">5. Пустая клетка в таблице расстояний значит «0 км». <span class="ans"><span>Неверно: дороги нет</span></span></p></div>
+  </div>
+</div>
+</section>
+
+<!-- 17 -->
+<section class="slide" data-stage="9" data-note="Каждый продолжает одну фразу вслух. Проверяем план урока (4 пункта).">
+<div class="stagetag"><b>Этап 9</b> · Рефлексия · 2 мин</div>
+<div class="inner">
+  <h2>Продолжите фразу</h2>
+  <div class="row">
+    <div class="col">
+      <div class="card" style="margin-bottom:10px"><p>📋 Табличная модель — это…</p></div>
+      <div class="card" style="margin-bottom:10px"><p>🔁 Таблицу дорог можно превратить в…</p></div>
+      <div class="card" style="margin-bottom:10px"><p>🛣️ Чтобы найти кратчайший путь, я…</p></div>
+      <div class="card"><p>🤔 Самым трудным сегодня было…</p></div>
+    </div>
+    <div class="card soft" style="width:450px;flex:none">
+      <h3>Запомнили?</h3>
+      <p style="font-size:21px">✔ «Объект – свойство»: объекты и их свойства</p>
+      <p style="font-size:21px;margin-top:6px">✔ «Объект – объект»: связи между объектами</p>
+      <p style="font-size:21px;margin-top:6px">✔ Таблица дорог = взвешенный граф</p>
+      <p style="font-size:21px;margin-top:6px">✔ Кратчайший путь: перебор или метки</p>
+      <p style="font-size:21px;margin-top:6px">✔ Прямая дорога не всегда короче</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 18 -->
+<section class="slide" data-stage="10" data-note="Ссылку на практику отправить в Umaclass. Если вставить ссылку в CONFIG.practiceUrl в начале скрипта — на слайде появится кнопка.">
+<div class="stagetag"><b>Этап 10</b> · Практика · 1 мин</div>
+<div class="inner">
+  <h2>Практика 💻</h2>
+  <p class="lead">Откройте ссылку, которую я отправлю в Umaclass. Работаем самостоятельно — с компьютера или телефона.</p>
+  <div class="g3" style="margin-top:10px">
+    <div class="tile"><div class="e">🌐</div><b>Открывайте в браузере</b><span>Chrome, Safari, Яндекс — не внутри мессенджера</span></div>
+    <div class="tile"><div class="e">✏️</div><b>Рисуйте граф</b><span>в тетради — так меньше ошибок в задании 4</span></div>
+    <div class="tile"><div class="e">🔍</div><b>Проверяйте ловушки</b><span>прямая дорога, «через пункт», один раз в каждом пункте</span></div>
+  </div>
+  <div style="margin-top:34px;text-align:center" id="practiceBox"></div>
+</div>
+</section>
+
+</div>
+<div id="notes"></div><div id="bar"></div>
+</div>
+
+<script type="application/json" id="stages">[["Оргмомент",1],["Актуализация",6],["Мотивация",2],["Тема и цель",1],["Новое знание",10],["Физминутка",2],["Задание 4 ОГЭ",13],["Самопроверка",2],["Рефлексия",2],["Практика",1]]</script>
+<script>
+/* ===== Настройки для учителя =====
+   practiceUrl — ссылка на практику (если вставить, на последнем слайде появится кнопка). */
+const CONFIG={practiceUrl:""};
+
+const $=(s,el=document)=>el.querySelector(s),$$=(s,el=document)=>[...el.querySelectorAll(s)];
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ===== Граф (SVG) ===== */
+let GID=0;
+function Graph(svg,cfg){
+  const id=++GID,r=cfg.r||26,P=cfg.pos,dir=!!cfg.directed;
+  const key=(u,v)=>dir?u+">"+v:[u,v].sort().join("-");
+  const E=cfg.edges.map(([u,v,w,b])=>({u,v,w,b:b||0,k:key(u,v)}));
+  const unit=(x,y)=>{const l=Math.hypot(x,y)||1;return [x/l,y/l];};
+  E.forEach(e=>{const [x1,y1]=P[e.u],[x2,y2]=P[e.v];const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy),nx=-dy/L,ny=dx/L;
+    const mx=(x1+x2)/2,my=(y1+y2)/2,cx=mx+nx*e.b,cy=my+ny*e.b;
+    const a=unit(cx-x1,cy-y1),c=unit(cx-x2,cy-y2),r2=dir?r+3:r;
+    const f=n=>n.toFixed(1);
+    e.d=`M${f(x1+a[0]*r)},${f(y1+a[1]*r)} Q${f(cx)},${f(cy)} ${f(x2+c[0]*r2)},${f(y2+c[1]*r2)}`;
+    e.lx=mx+nx*e.b/2;e.ly=my+ny*e.b/2;});
+  svg.setAttribute("viewBox",cfg.vb||"0 0 700 440");
+  svg.classList.add("gr");
+  let h=dir?`<defs><marker id="ar${id}" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="5" markerHeight="5" markerUnits="strokeWidth" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#a8917a"/></marker></defs>`:"";
+  h+=E.map(e=>`<path class="ed" data-k="${e.k}" d="${e.d}"${dir?` marker-end="url(#ar${id})"`:""}/>`).join("");
+  h+=E.map(e=>`<path class="hit" data-k="${e.k}" d="${e.d}"/>`).join("");
+  if(cfg.weights!==false)h+=E.map(e=>`<text class="w" data-k="${e.k}" x="${e.lx.toFixed(1)}" y="${e.ly.toFixed(1)}">${e.w}</text>`).join("");
+  h+=Object.keys(P).map(n=>`<g class="nd" data-n="${n}"><circle cx="${P[n][0]}" cy="${P[n][1]}" r="${r}"/><text x="${P[n][0]}" y="${P[n][1]+1}">${n}</text></g>`).join("");
+  h+=Object.keys(P).map(n=>{const below=(cfg.labBelow||"").includes(n);const o=(cfg.labOff||{})[n]||[0,below?r+20:-r-16];return `<text class="lb" data-n="${n}" x="${P[n][0]+o[0]}" y="${P[n][1]+o[1]}"></text>`;}).join("");
+  svg.innerHTML=h;
+  const q=s=>[...svg.querySelectorAll(s)];
+  const api={E,key,
+    els:k=>q(`[data-k="${k}"]`),
+    hl(keys,cls="on"){keys.forEach(k=>api.els(k).forEach(x=>x.classList.add(cls)));},
+    clear(...cls){(cls.length?cls:["on","best"]).forEach(c=>q("."+c).forEach(x=>x.classList.remove(c)));},
+    hideAll(){q(".ed,.w,.hit").forEach(x=>x.classList.add("hid"));},
+    showAll(){q(".hid").forEach(x=>x.classList.remove("hid"));},
+    show(k){api.els(k).forEach(x=>x.classList.remove("hid"));},
+    node(n){return svg.querySelector(`.nd[data-n="${n}"]`);},
+    lab(n,t){svg.querySelector(`.lb[data-n="${n}"]`).textContent=t??"";},
+    pathKeys(p){const res=[];for(let i=1;i<p.length;i++)res.push(key(p[i-1],p[i]));return res;},
+    onEdge(cb){q(".hit").forEach(x=>x.addEventListener("click",()=>{if(!x.classList.contains("hid"))cb(x.dataset.k);}));},
+    onNode(cb){q(".nd").forEach(x=>x.addEventListener("click",()=>cb(x.dataset.n)));}
+  };
+  return api;
+}
+
+/* ===== Таблица графа ===== */
+function Matrix(el,cfg){
+  const names=cfg.names,W={};
+  cfg.edges.forEach(([u,v,w])=>{W[u+">"+v]=w;W[v+">"+u]=w;});
+  let h=`<table class="mt${cfg.small?" sm":""}"><tr><th class="cn"></th>${names.map(n=>`<th>${n}</th>`).join("")}</tr>`;
+  names.forEach(a=>{h+=`<tr><th>${a}</th>`;names.forEach(b=>{
+    if(a===b){h+=`<td class="dg"></td>`;return;}
+    const w=W[a+">"+b];
+    h+=`<td data-a="${a}" data-b="${b}" class="${w==null&&!cfg.ans?"no":""}">${cfg.ans?`<span class="ans"><span>${w??"—"}</span></span>`:(w??"")}</td>`;});h+="</tr>";});
+  el.innerHTML=h+"</table>";
+  const api={W,
+    cells(a,b){return [el.querySelector(`td[data-a="${a}"][data-b="${b}"]`),el.querySelector(`td[data-a="${b}"][data-b="${a}"]`)].filter(Boolean);},
+    hl(a,b,cls="on"){api.cells(a,b).forEach(c=>c.classList.add(cls));},
+    clear(cls="on"){$$("td."+cls,el).forEach(c=>c.classList.remove(cls));},
+    onCell(cb){$$("td[data-a]",el).forEach(c=>c.addEventListener("click",()=>cb(c.dataset.a,c.dataset.b)));}
+  };
+  return api;
+}
+function link(G,T){
+  const pick=(a,b)=>{if(T.W[a+">"+b]==null)return;G.clear("on");T.clear("on");G.hl([G.key(a,b)]);T.hl(a,b);};
+  T.onCell(pick);
+  G.onEdge(k=>{const [a,b]=k.split("-");pick(a,b);});
+}
+
+/* ===== Алгоритмы ===== */
+function adjOf(edges){const A={};edges.forEach(([u,v,w])=>{(A[u]=A[u]||[]).push([v,w]);(A[v]=A[v]||[]).push([u,w]);});Object.values(A).forEach(l=>l.sort((x,y)=>x[0].localeCompare(y[0])));return A;}
+function allPaths(edges,s,t){const A=adjOf(edges),res=[];
+  (function dfs(p,ws){const u=p[p.length-1];if(u===t){res.push({p:[...p],ws:[...ws],len:ws.reduce((x,y)=>x+y,0)});return;}
+    (A[u]||[]).forEach(([v,w])=>{if(!p.includes(v)){p.push(v);ws.push(w);dfs(p,ws);p.pop();ws.pop();}});})([s],[]);
+  return res;}
+function marksSteps(names,edges,s,t){
+  const A=adjOf(edges),d={},prev={},closed=[];names.forEach(n=>d[n]=Infinity);d[s]=0;
+  const show=x=>x===Infinity?"∞":x;
+  const steps=[{d:{...d},closed:[],cur:null,msg:`Старт: у пункта <b>${s}</b> ставим метку 0, у остальных — ∞ (расстояние пока неизвестно).`}];
+  while(true){
+    const open=names.filter(n=>!closed.includes(n)&&d[n]<Infinity);if(!open.length)break;
+    const c=open.reduce((a,b)=>d[b]<d[a]?b:a);closed.push(c);const parts=[];
+    (A[c]||[]).forEach(([v,w])=>{if(closed.includes(v))return;const nd=d[c]+w;
+      if(nd<d[v]){parts.push(`${v}: ${d[c]} + ${w} = ${nd}${d[v]<Infinity?` &lt; ${d[v]}`:""} → <b>метка ${nd}</b>`);d[v]=nd;prev[v]=c;}
+      else parts.push(`${v}: ${d[c]} + ${w} = ${nd} ≥ ${d[v]} — не меняем`);});
+    steps.push({d:{...d},closed:[...closed],cur:c,msg:`Наименьшая метка у <b>${c}</b> (${d[c]}) — закрываем.`+(c===t?` Это конечный пункт — готово!`:(parts.length?`<br>Соседи ${c}:<br>`+parts.map(x=>"• "+x).join("<br>"):"<br>Открытых соседей нет."))});
+    if(c===t)break;}
+  const path=[t];while(path[0]!==s)path.unshift(prev[path[0]]);
+  const ws=[];for(let i=1;i<path.length;i++)ws.push(A[path[i-1]].find(x=>x[0]===path[i])[1]);
+  steps.push({d:{...d},closed:[...closed],cur:null,path,msg:`Кратчайший путь из ${s} в ${t}: <b>${path.join("–")}</b> = ${ws.join(" + ")} = <b>${d[t]} км</b>.<br>Идём от ${t} назад: откуда пришла каждая метка.`});
+  steps.show=show;return steps;}
+
+/* ===== Данные ===== */
+const T1={names:["A","B","C","D","E"],
+  edges:[["A","B",2],["A","C",7],["A","E",12],["B","C",3],["B","D",8],["C","D",2],["C","E",6],["D","E",3]],
+  pos:{A:[70,330],B:[200,110],C:[330,250],D:[500,120],E:[650,330]},vb:"0 0 720 420"};
+const T2={names:["A","B","C","D","E","F"],
+  edges:[["A","B",4],["A","C",2],["B","C",1],["B","D",5],["C","D",8],["C","E",10],["D","E",2],["D","F",6],["E","F",3]],
+  pos:{A:[60,220],B:[220,90],C:[220,350],D:[430,90],E:[430,350],F:[620,220]},vb:"0 0 680 440",labBelow:"CE"};
+
+/* --- слайд 2: мини-графы --- */
+const MP={A:[40,95],B:[150,35],C:[150,155],D:[260,95]};
+Graph($("#mini1"),{pos:MP,r:20,vb:"0 0 300 190",weights:false,edges:[["A","B"],["A","C"],["B","C"],["B","D"],["C","D"]]});
+Graph($("#mini2"),{pos:MP,r:20,vb:"0 0 300 190",edges:[["A","B",5],["A","C",3],["B","C",2],["B","D",4],["C","D",6]]});
+Graph($("#mini3"),{pos:MP,r:20,vb:"0 0 300 190",directed:true,weights:false,edges:[["A","B"],["A","C"],["B","C"],["B","D"],["C","D"]]});
+
+/* --- слайд 3: задание 9 --- */
+(function(){
+  const pos={"А":[60,215],"Б":[200,80],"В":[230,215],"Г":[200,350],"Д":[390,105],"Е":[390,330],"Ж":[530,225],"К":[665,140]};
+  const ed=[["А","Б"],["А","В"],["А","Г"],["Б","В"],["Б","Д"],["Г","В"],["Г","Е"],["В","Д"],["В","Е"],["Д","Ж"],["Д","К"],["Е","Ж"],["Ж","К"]];
+  const G=Graph($("#g9"),{pos,edges:ed,directed:true,weights:false,vb:"0 0 720 430",labBelow:"ГЕ",labOff:{"В":[-40,-30]}});
+  const order=["А","Б","Г","В","Д","Е","Ж","К"],cnt={},lines={};
+  order.forEach(n=>{const inc=ed.filter(e=>e[1]===n).map(e=>e[0]);
+    if(!inc.length){cnt[n]=1;lines[n]=`<b>${n}</b> — начало пути: <b>1</b>`;}
+    else{cnt[n]=inc.reduce((s,x)=>s+cnt[x],0);lines[n]=`<b>${n}</b> ← ${inc.join(", ")}: `+(inc.length>1?inc.map(x=>cnt[x]).join(" + ")+" = ":"")+`<b>${cnt[n]}</b>`;}});
+  $("#ghost9").innerHTML=order.map(n=>`<i class="step ghost" data-n="${n}"></i>`).join("");
+  const log=$("#log9");
+  function put(n,fresh){G.lab(n,cnt[n]);G.node(n).classList.add("closed");
+    if(fresh){G.clear("on");G.hl(ed.filter(e=>e[1]===n).map(e=>G.key(e[0],e[1])));$$("div",log).forEach(x=>x.classList.remove("new"));}
+    const d=document.createElement("div");d.innerHTML=lines[n];if(fresh)d.className="new";log.appendChild(d);}
+  const s=$("#s9");
+  s.addEventListener("enter",e=>{G.clear("on","closed");order.forEach(n=>G.lab(n,""));log.innerHTML="";if(e.detail.all)order.forEach(n=>put(n,false));});
+  s.addEventListener("reveal",e=>{const n=e.target.dataset.n;if(n)put(n,true);});
+  G.onNode(n=>{const g=$(`#ghost9 [data-n="${n}"]`);if(!g.classList.contains("shown")){g.classList.add("shown");put(n,true);}});
+})();
+
+/* --- слайд 4: мотивация --- */
+(function(){const G=Graph($("#gM"),T1),T=Matrix($("#tM"),T1);link(G,T);})();
+
+/* --- слайд 9: из таблицы — граф --- */
+(function(){
+  const G=Graph($("#gB"),T1),T=Matrix($("#tB"),T1);link(G,T);
+  const seq=[];T1.names.forEach((a,i)=>T1.names.slice(i+1).forEach(b=>{if(T.W[a+">"+b]!=null)seq.push([a,b,T.W[a+">"+b]]);}));
+  $("#ghostB").innerHTML=seq.map(([a,b])=>`<i class="step ghost" data-a="${a}" data-b="${b}"></i>`).join("");
+  const log=$("#logB");
+  const s=$("#sB");
+  s.addEventListener("enter",e=>{G.clear();T.clear();if(e.detail.all){G.showAll();log.innerHTML="Граф построен. Нажмите на клетку или на дорогу.";}
+    else{G.hideAll();log.innerHTML="Нажимайте <b>→</b>: читаем таблицу по строкам, слева направо.";}});
+  s.addEventListener("reveal",e=>{const {a,b}=e.target.dataset;if(!a)return;const w=T.W[a+">"+b];
+    G.show(G.key(a,b));G.clear();T.clear();G.hl([G.key(a,b)]);T.hl(a,b);
+    log.innerHTML=`Строка <b>${a}</b>, столбец <b>${b}</b>: ${w} → дорога <b>${a}–${b}</b> длиной ${w} км.<br><span class="muted">То же число стоит в клетке ${b}–${a}.</span>`;});
+})();
+
+/* --- слайд 10: из графа — таблица --- */
+(function(){
+  const R={names:["A","B","C","D"],edges:[["A","B",5],["A","C",3],["B","C",1],["B","D",4],["C","D",6]]};
+  Graph($("#gR"),{...R,pos:{A:[80,200],B:[300,70],C:[300,330],D:[520,200]},vb:"0 0 600 400"});
+  Matrix($("#tR"),{...R,ans:true});
+})();
+
+/* --- слайд 12: условие --- */
+Matrix($("#tO"),{...T1,small:true});
+
+/* --- слайд 13: перебор --- */
+(function(){
+  const G=Graph($("#gP"),T1),paths=allPaths(T1.edges,"A","E");
+  const best=paths.reduce((a,b)=>b.len<a.len?b:a),direct=paths.find(p=>p.p.length===2);
+  $("#chipsP").innerHTML=paths.map((p,i)=>`<button type="button" class="chip step" data-i="${i}"><span>${p.p.join("–")}</span><b><i>${p.ws.join("+")} =</i> ${p.len}</b></button>`).join("");
+  $("#bestP").innerHTML=`Кратчайший: <b>${best.p.join("–")} = ${best.len} км</b>.`+(direct?` Прямая дорога A–E = ${direct.len} км — длиннее!`:"");
+  const chips=$$(".chip",$("#chipsP"));
+  const showP=i=>{G.clear();chips.forEach(c=>c.classList.remove("cur"));chips[i].classList.add("cur");G.hl(G.pathKeys(paths[i].p));};
+  const showBest=()=>{G.clear();chips.forEach(c=>c.classList.remove("cur"));const bi=paths.indexOf(best);chips[bi].classList.add("best");G.hl(G.pathKeys(best.p),"best");};
+  chips.forEach((c,i)=>c.addEventListener("click",()=>{if(c.classList.contains("shown"))showP(i);}));
+  const s=$("#sP");
+  s.addEventListener("enter",e=>{G.clear();chips.forEach(c=>c.classList.remove("cur","best"));if(e.detail.all)showBest();});
+  s.addEventListener("reveal",e=>{if(e.target.id==="bestP")showBest();else if(e.target.dataset.i!=null)showP(+e.target.dataset.i);});
+})();
+
+/* --- слайд 14: метки --- */
+(function(){
+  const G=Graph($("#gD"),T2),steps=marksSteps(T2.names,T2.edges,"A","F");
+  $("#ghostD").innerHTML=steps.slice(1).map((x,i)=>`<i class="step ghost" data-k="${i+1}"></i>`).join("");
+  const log=$("#logD"),mk=$("#marksD");
+  function render(i){const st=steps[i];G.clear("on","best","closed");
+    T2.names.forEach(n=>{G.lab(n,steps.show(st.d[n]));if(st.closed.includes(n))G.node(n).classList.add("closed");});
+    if(st.cur)G.node(st.cur).classList.add("on");
+    if(st.path)G.hl(G.pathKeys(st.path),"best");
+    mk.innerHTML=T2.names.map(n=>`<div class="${st.closed.includes(n)?"closed":""}"><b>${n}</b><span>${steps.show(st.d[n])}</span></div>`).join("");
+    log.innerHTML=`<div class="muted" style="font-size:16px;font-weight:800">Шаг ${i} из ${steps.length-1}</div><div>${st.msg}</div>`;}
+  const s=$("#sD");
+  s.addEventListener("enter",e=>render(e.detail.all?steps.length-1:0));
+  s.addEventListener("reveal",e=>{if(e.target.dataset.k)render(+e.target.dataset.k);});
+})();
+
+/* --- слайд 15: решаем сами --- */
+const TASKS=[
+  {tab:"1",lvl:"базовое",names:["A","B","C","D","E"],s:"A",t:"E",
+   edges:[["A","B",5],["A","C",2],["B","C",2],["B","D",3],["B","E",9],["C","D",7],["D","E",3]],
+   pos:{A:[60,220],B:[240,90],C:[240,350],D:[440,300],E:[620,170]},vb:"0 0 680 420",
+   hint:"Нарисуйте граф. Из A можно поехать в B (5) или в C (2). А если из C заехать в B?"},
+  {tab:"2",lvl:"через пункт",names:["A","B","C","D","E","F"],s:"A",t:"F",via:"E",
+   edges:[["A","B",3],["A","C",4],["B","C",2],["B","D",6],["C","E",5],["D","E",2],["D","F",4],["E","F",7]],
+   pos:{A:[60,220],B:[220,90],C:[220,350],D:[430,90],E:[430,350],F:[620,220]},vb:"0 0 680 440",
+   hint:"Берите только пути, в которых есть E. Удобно: кратчайший A→E + кратчайший E→F, но пункты не должны повторяться."},
+  {tab:"3",lvl:"ловушка",names:["A","B","C","D","E"],s:"B",t:"E",
+   edges:[["A","B",2],["A","C",3],["A","E",7],["B","C",4],["B","E",11,-400],["C","D",1],["D","E",3]],
+   pos:{B:[60,250],A:[250,120],C:[250,380],D:[450,380],E:[640,250]},vb:"0 0 700 430",
+   hint:"Прямая дорога B–E = 11. Попробуйте объехать: через A или через C и D."},
+  {tab:"⭐",lvl:"как в ОГЭ",names:["A","B","C","D","E","F"],s:"A",t:"F",
+   edges:[["A","B",2],["A","C",6],["A","D",11],["B","C",3],["B","E",9],["C","D",4],["C","E",4],["D","E",1],["D","F",3],["E","F",6]],
+   pos:{A:[60,230],B:[240,80],C:[260,240],D:[450,370],E:[450,110],F:[640,240]},vb:"0 0 700 430",
+   hint:"Пунктов шесть — удобнее метки. Начните: A = 0, B = 2, C = min(6, 2 + 3)…"}
+];
+TASKS.forEach(t=>{let P=allPaths(t.edges,t.s,t.t);const all=P.reduce((a,b)=>b.len<a.len?b:a);
+  if(t.via)P=P.filter(p=>p.p.includes(t.via));
+  const best=P.reduce((a,b)=>b.len<a.len?b:a);t.res=best.len;
+  t.sol=`Кратчайший${t.via?` путь через ${t.via}`:""}: <b>${best.p.join("–")}</b> = ${best.ws.join(" + ")} = <b>${best.len}</b>.`+
+    (t.via&&all.len<best.len?`<br>Без условия был бы ${all.p.join("–")} = ${all.len}, но он не проходит через ${t.via}!`:"")+
+    (!t.via?(()=>{const d=t.edges.find(e=>[e[0],e[1]].sort().join()===[t.s,t.t].sort().join());return d&&d[2]>best.len?`<br>Прямая дорога ${t.s}–${t.t} = ${d[2]} — длиннее.`:"";})():"");
+  t.q=`Между пунктами ${t.names.join(", ")} построены дороги, длины которых (в км) указаны в таблице. Определите длину кратчайшего пути между пунктами <b>${t.s}</b> и <b>${t.t}</b>${t.via?`, проходящего через пункт <b>${t.via}</b>`:""}. Каждый пункт можно посетить не больше одного раза.`;});
+(function(root,tasks){
+  let cur=0;const ans={};
+  function draw(){const t=tasks[cur],v=ans[cur]||{};
+    root.innerHTML=`<div class="row" style="gap:18px;align-items:flex-start">
+      <div style="width:560px;flex:none">
+        <div class="qt">${tasks.map((x,i)=>`<button type="button" data-q="${i}" class="${i===cur?"on":""} ${(ans[i]||{}).ok?"ok":""}">${x.tab}</button>`).join("")}</div>
+        <span class="lvl">${t.lvl}</span><div class="qq">${t.q}</div>
+        <div style="margin-top:10px" class="tw"></div>
+        <div class="ar2"><input type="text" inputmode="numeric" value="${esc(v.v||"")}" placeholder="Ответ, км"><button type="button" class="go">Проверить</button></div>
+        <div class="fb ${v.checked?(v.ok?"ok":"no"):""}">${v.checked?(v.ok?"✓ Верно!":"✗ Неверно — проверьте ещё раз"):""}</div>
+      </div>
+      <div class="col" style="display:grid;gap:8px">
+        <div class="gcard gwrap" style="padding:8px 12px"><svg class="g"></svg>
+          <div class="gcover ${v.g?"off":""}"><span>✏️ Сначала нарисуйте граф в тетради,<br>потом проверьте себя</span><button type="button" class="btn-o sg">Показать граф</button></div></div>
+        <div class="more"><button type="button" class="bh">Подсказка</button><button type="button" class="bs">Решение</button></div>
+        <div class="hint hh">${t.hint}</div><div class="hint hs">${t.sol}</div>
+      </div></div>`;
+    const G=Graph($("svg.g",root),t),T=Matrix($(".tw",root),{...t,small:true});link(G,T);
+    $$(".qt button",root).forEach(b=>b.onclick=()=>{cur=+b.dataset.q;draw();});
+    const inp=$("input",root);inp.oninput=()=>{ans[cur]=Object.assign(ans[cur]||{},{v:inp.value,checked:false});};
+    const check=()=>{const n=parseFloat(inp.value.replace(",","."));ans[cur]=Object.assign(ans[cur]||{},{v:inp.value,checked:true,ok:n===t.res});draw();};
+    inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();check();}};
+    $(".go",root).onclick=check;
+    $(".sg",root).onclick=()=>{ans[cur]=Object.assign(ans[cur]||{},{g:true});$(".gcover",root).classList.add("off");};
+    $(".bh",root).onclick=()=>$(".hh",root).classList.toggle("on");
+    $(".bs",root).onclick=()=>{$(".hs",root).classList.toggle("on");if(!(ans[cur]||{}).g){ans[cur]=Object.assign(ans[cur]||{},{g:true});$(".gcover",root).classList.add("off");}};
+  }
+  draw();
+})($("#qz4"),TASKS);
+
+/* --- слайд 18: практика --- */
+if(CONFIG.practiceUrl)$("#practiceBox").innerHTML=`<a class="linkbox" href="${esc(CONFIG.practiceUrl)}" target="_blank" rel="noopener">💻 Открыть практику →</a>`;
+else $("#practiceBox").innerHTML=`<div class="rule" style="display:inline-block;font-size:24px">🔗 Ссылка — в Umaclass</div>`;
+
+/* карточки «какой вид таблицы» */
+$$(".tcard").forEach(b=>b.addEventListener("click",()=>b.classList.add("shown")));
+
+/* ===== Навигация презентации ===== */
+const deck=$("#deck"),slides=$$(".slide"),bar=$("#bar"),notes=$("#notes");let cur=0;
+function fit(){const s=Math.min(innerWidth/1280,innerHeight/720);deck.style.transform="scale("+s+")";}
+addEventListener("resize",fit);fit();
+const stages=JSON.parse($("#stages").textContent);
+const stEls=stages.map((s,i)=>{const d=document.createElement("div");d.className="st";d.textContent=({"Задание 4 ОГЭ":"Задание 4"})[s[0]]||s[0];d.title=s[0]+" — "+s[1]+" мин";
+  d.onclick=()=>{const k=slides.findIndex(x=>+x.dataset.stage===i+1);if(k>=0)go(k,"all");};return d;});
+const mk=(t,f,ti)=>{const b=document.createElement("button");b.className="nb";b.textContent=t;b.onclick=f;if(ti)b.title=ti;return b;};
+const cnt=document.createElement("div");cnt.className="cnt";
+bar.append(mk("‹",()=>prev()),...stEls,cnt,mk("✎",()=>notes.classList.toggle("on"),"Заметки учителю (N)"),mk("›",()=>next()));
+const REV=".step,.ans,.tcard";
+function go(k,mode){
+  slides[cur].classList.remove("active");cur=Math.max(0,Math.min(slides.length-1,k));
+  const s=slides[cur];s.classList.add("active");
+  $$(REV,s).forEach(e=>e.classList.toggle("shown",mode==="all"));
+  s.dispatchEvent(new CustomEvent("enter",{detail:{all:mode==="all"}}));
+  const stg=+s.dataset.stage;stEls.forEach((e,i)=>{e.classList.toggle("cur",i+1===stg);e.classList.toggle("done",i+1<stg);});
+  cnt.textContent=(cur+1)+" / "+slides.length;
+  notes.innerHTML="<b>Учителю:</b> "+(s.dataset.note||"—");
+  try{history.replaceState(null,"","#"+(cur+1));}catch(e){}
+}
+function next(){const s=slides[cur],h=s.querySelector(".step:not(.shown),.ans:not(.shown),.tcard:not(.shown)");
+  if(h){h.classList.add("shown");h.dispatchEvent(new Event("reveal",{bubbles:true}));return;}
+  if(cur<slides.length-1)go(cur+1);}
+function prev(){if(cur>0)go(cur-1,"all");}
+addEventListener("keydown",e=>{
+  if(e.target.closest&&e.target.closest("input,textarea"))return;
+  if(["ArrowRight","PageDown"," ","Enter"].includes(e.key)){e.preventDefault();next();}
+  else if(["ArrowLeft","PageUp","Backspace"].includes(e.key)){e.preventDefault();prev();}
+  else if("fFаА".includes(e.key)&&e.key.length===1){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});}
+  else if("nNтТ".includes(e.key)&&e.key.length===1){notes.classList.toggle("on");}
+  else if(e.key==="Home"){go(0);}
+});
+document.addEventListener("click",e=>{const a=e.target.closest(".ans");if(a)a.classList.add("shown");});
+addEventListener("hashchange",()=>{const n=parseInt(location.hash.slice(1));if(n&&n-1!==cur)go(n-1);});
+go((parseInt(location.hash.slice(1))||1)-1);
+</script>
+</body>
+</html>
