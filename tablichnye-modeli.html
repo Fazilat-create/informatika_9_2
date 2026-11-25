@@ -100,6 +100,8 @@ svg.gr{display:block;width:100%;height:auto;overflow:visible}
 .gr .nd text{font-family:"Nunito",sans-serif;font-weight:800;font-size:27px;fill:#1d2346;text-anchor:middle;dominant-baseline:central;pointer-events:none}
 .gr .nd.on circle{fill:#fff1a8}
 .gr .nd.closed circle{fill:#dff0d6;stroke:#3f8a3a}
+.gr .nd{transition:opacity .4s}
+.gr .nd.off{opacity:.25}
 .gr .lb{font-family:"Nunito",sans-serif;font-weight:800;font-size:26px;fill:#2f5f9e;text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:#fffaf3;stroke-width:8px;stroke-linejoin:round;pointer-events:none}
 .gcard{background:#fffaf3;border:2px solid #f6c597;border-radius:24px;padding:12px 16px}
 
@@ -449,6 +451,33 @@ table.mt{border-collapse:separate;border-spacing:0;background:#fffaf3;border:2px
 </div>
 </section>
 
+<!-- 14б -->
+<section class="slide" id="sC" data-stage="7" data-note="Метки с условием. Каждое → один шаг. «Обязательно через E»: ставим метки ОТ E — дороги двусторонние, поэтому сразу получаем расстояния и до A, и до F; складываем. Проверяем, что в склеенном пути буквы не повторяются. «Обойти D»: вычёркиваем D вместе с дорогами и ставим метки как обычно. Сравните: 14 → 16 → 17.">
+<div class="stagetag"><b>Этап 7</b> · Задание 4 ОГЭ · 13 мин</div>
+<div class="inner" style="padding-top:68px">
+  <h2 style="margin-bottom:8px">Метки с условием: путь из A в F</h2>
+  <div class="row" style="align-items:flex-start;gap:18px">
+    <div style="width:590px;flex:none;display:grid;gap:10px">
+      <div class="gcard"><svg id="gC"></svg></div>
+      <div class="rule" style="font-size:19px;padding:9px 18px">⚠️ После «склейки» проверьте весь путь: <b>ни один пункт не должен повторяться</b>.</div>
+    </div>
+    <div class="col" style="display:grid;gap:10px;align-content:start">
+      <div class="log step" data-st="1" id="c1" style="font-size:20px"></div>
+      <div class="card blue" style="padding:10px 16px">
+        <h3 style="color:#2f5f9e;margin-bottom:4px">① Обязательно через E</h3>
+        <p class="step" data-st="2" id="c2" style="font-size:19px;line-height:1.35"></p>
+        <p class="step" data-st="3" id="c3" style="font-size:19px;line-height:1.35;margin-top:6px"></p>
+      </div>
+      <div class="card soft" style="padding:10px 16px">
+        <h3 style="margin-bottom:4px">② Пункт D нужно обойти</h3>
+        <p class="step" data-st="4" id="c4" style="font-size:19px;line-height:1.35"></p>
+        <p class="step" data-st="5" id="c5" style="font-size:19px;line-height:1.35;margin-top:6px"></p>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
 <!-- 15 -->
 <section class="slide" data-stage="7" data-note="Решаем у доски / в тетрадях. Сначала рисуем граф сами, кнопка «Показать граф» — для проверки. Задание 2 — «через пункт»: самый короткий путь вообще (13) через E не проходит. Задание 3 — ловушка прямой дороги. ⭐ — если успеваем.">
 <div class="stagetag"><b>Этап 7</b> · Задание 4 ОГЭ · 13 мин</div>
@@ -701,6 +730,39 @@ Matrix($("#tO"),{...T1,small:true});
   const s=$("#sD");
   s.addEventListener("enter",e=>render(e.detail.all?steps.length-1:0));
   s.addEventListener("reveal",e=>{if(e.target.dataset.k)render(+e.target.dataset.k);});
+})();
+
+/* --- слайд «метки с условием» --- */
+(function(){
+  const T3={names:["A","B","C","D","E","F"],
+    edges:[["A","B",3],["A","C",6],["B","C",2],["B","D",7],["C","E",4],["D","E",3],["D","F",4],["E","F",8]],
+    pos:{A:[60,220],B:[220,90],C:[220,350],D:[430,90],E:[430,350],F:[620,220]},vb:"0 0 680 440",labBelow:"CE"};
+  const G=Graph($("#gC"),T3);
+  function dist(s,skip){const A=adjOf(T3.edges.filter(e=>e[0]!==skip&&e[1]!==skip)),d={},prev={},done=[];
+    T3.names.forEach(n=>d[n]=Infinity);d[s]=0;
+    while(true){const open=T3.names.filter(n=>n!==skip&&!done.includes(n)&&d[n]<Infinity);if(!open.length)break;
+      const c=open.reduce((a,b)=>d[b]<d[a]?b:a);done.push(c);(A[c]||[]).forEach(([v,w])=>{if(d[c]+w<d[v]){d[v]=d[c]+w;prev[v]=c;}});}
+    return {d,path:t=>{const p=[t];while(p[0]!==s)p.unshift(prev[p[0]]);return p;}};}
+  const W=(a,b)=>T3.edges.find(e=>(e[0]===a&&e[1]===b)||(e[0]===b&&e[1]===a))[2];
+  const sum=p=>p.slice(1).map((n,i)=>W(p[i],n));
+  const plain=dist("A"),pP=plain.path("F");
+  const fE=dist("E"),pAE=fE.path("A").reverse(),pEF=fE.path("F"),via=[...pAE,...pEF.slice(1)];
+  const noD=dist("A","D"),pD=noD.path("F");
+  const uniq=new Set(via).size===via.length;
+  $("#c1").innerHTML=`Без условий: <b>${pP.join("–")}</b> = ${sum(pP).join(" + ")} = <b>${plain.d.F}</b>. Через E этот путь не идёт, и D в нём есть.`;
+  $("#c2").innerHTML=`Ставим метки <b>от E</b> — сразу видно расстояния и до A, и до F: <b>A = ${fE.d.A}</b>, <b>F = ${fE.d.F}</b>.`;
+  $("#c3").innerHTML=`Склеиваем: ${fE.d.A} + ${fE.d.F} = <b>${fE.d.A+fE.d.F}</b>. Путь ${via.join("–")}`+(uniq?" — пункты не повторяются ✓":" — пункт повторяется ✗, нужен перебор");
+  $("#c4").innerHTML=`Вычёркиваем D: в таблице — его строку и столбец, на графе — все его дороги.`;
+  $("#c5").innerHTML=`Метки от A без D: `+T3.names.filter(n=>n!=="A"&&n!=="D").map(n=>`${n} = ${noD.d[n]}`).join(", ")+` → <b>${noD.d.F}</b>, путь ${pD.join("–")}.`;
+  function render(i){G.clear("on","best","closed","off");G.showAll();T3.names.forEach(n=>G.lab(n,""));
+    if(i===1)G.hl(G.pathKeys(pP),"best");
+    if(i===2||i===3){T3.names.forEach(n=>G.lab(n,fE.d[n]));G.node("E").classList.add("closed");}
+    if(i===3){G.hl(G.pathKeys(pAE),"on");G.hl(G.pathKeys(pEF),"best");}
+    if(i>=4){G.node("D").classList.add("off");G.E.filter(e=>e.u==="D"||e.v==="D").forEach(e=>G.els(e.k).forEach(x=>x.classList.add("hid")));}
+    if(i===5){T3.names.forEach(n=>{if(n!=="D")G.lab(n,noD.d[n]);});G.node("A").classList.add("closed");G.hl(G.pathKeys(pD),"best");}}
+  const s=$("#sC");
+  s.addEventListener("enter",e=>render(e.detail.all?5:0));
+  s.addEventListener("reveal",e=>{const k=e.target.dataset.st;if(k)render(+k);});
 })();
 
 /* --- слайд 15: решаем сами --- */
